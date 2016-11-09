@@ -144,15 +144,22 @@ module.exports = function Aggr () {
   }
 
   aggr.filter = ( key, test ) => {
-    if ( typeof test !== 'function' ) {
-      const nTest = normalize( test );
-      test = d => d === nTest;
+    if ( typeof key === 'object' ) {
+      filters.push( key );
     }
-    filters.push( typeof key === 'object' ? key : {
-      key: key,
-      type: 'eq',
-      test: test
-    });
+    else {
+      if ( typeof test !== 'function' && test !== undefined ) {
+        const nTest = normalize( test );
+        test = d => d === nTest;
+      }
+      if ( test ) {
+        filters.push({
+          key: key,
+          type: 'eq',
+          test: test
+        });
+      }
+    }
     return aggr;
   };
 

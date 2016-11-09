@@ -313,6 +313,8 @@ tape( 'filter by value', t => {
   t.equal( r6.length, 5, 'only true' );
   const r7 = aggro().filter( 'b', false ).data( dataWithNulls )[0].values;
   t.equal( r7.length, 3, 'only false' );
+  const r8 = aggro().filter( 'date', undefined ).data( crimeaData )[0].values;
+  t.equal( r8.length, crimeaData.length, 'ignore undefined filtervalue' );
   t.end();
 });
 
