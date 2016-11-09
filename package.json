@@ -1,0 +1,14 @@
+{
+  "name": "aggro",
+  "version": "1.0.0",
+  "description": "Simple object data transformer utility",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/test-aggro.js && eslint index.js src"
+  },
+  "author": "Borgar Þorsteinsson <borgar@borgar.net> (http://borgar.net/)",
+  "license": "MIT",
+  "devDependencies": {
+    "tape": "~4.6.2"
+  }
+}
