@@ -406,3 +406,17 @@ tape( 'token filter', t => {
   t.end();
 });
 
+tape( 'cloning works', t => {
+  const ag = aggro().groupBy( 'cat' ).filter( 'disease', d => d > 100 );
+  const r1 = ag.data( crimeaData );
+  t.equal( r1.length, 5, 'grouping works for strings' );
+  t.deepEqual( r1.map( d => d.key ), [ 'C', 'B', 'A', 'D', 'E' ], 'correct keys returned' );
+  const r2 = ag.copy().data( crimeaData );
+  t.equal( r2.length, 5, 'grouping works for strings in copy' );
+  t.deepEqual( r2.map( d => d.key ), [ 'C', 'B', 'A', 'D', 'E' ], 'correct keys returned by copy' );
+  const r3 = ag.copy().in( 'cat', [ 'A', 'B' ] ).data( crimeaData );
+  t.equal( r3.length, 2, 'grouping works for strings in copy with filter' );
+  t.deepEqual( r3.map( d => d.key ), [ 'B', 'A' ], 'correct keys returned by copy with filter' );
+  t.end();
+});
+

@@ -254,6 +254,13 @@ module.exports = function Aggr () {
     return aggr;
   };
 
+  aggr.copy = () => {
+    const clone = Aggr().groupBy( joinKey );
+    filters.forEach( d => clone.filter( d ) );
+    aggrs.forEach( d => clone.aggregate( d[0], d[2], d[3], d[1] ) );
+    return clone;
+  };
+
   aggr.data = aggr;
 
   return aggr;
