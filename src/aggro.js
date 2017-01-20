@@ -50,10 +50,13 @@ const uniq = arr => {
   return list;
 };
 
+const collate = ( a, b ) => a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+
 module.exports = function Aggr () {
   const filters = [];
   const aggrs = [];
   let joinKey = null;
+  let sortFn = null;
 
   function aggr ( data ) {
     // run filters
@@ -136,6 +139,12 @@ module.exports = function Aggr () {
       }
       return item;
     });
+
+    if ( sortFn ) {
+      retdata.sort( ( a, b ) => {
+        return sortFn( normalize( a.key ), normalize( b.key ) );
+      });
+    }
 
     return retdata;
   }
@@ -224,6 +233,20 @@ module.exports = function Aggr () {
     return aggr;
   };
 
+  aggr.sortKeys = fn => {
+    if ( typeof fn === 'function' ) {
+      sortFn = fn;
+    }
+    else if ( !!fn || fn === undefined ) {
+      // can trigger sorting by aggro().sortKeys()
+      sortFn = collate;
+    }
+    else {
+      sortFn = null;
+    }
+    return aggr;
+  };
+
   aggr.sum = ( key, cb, keyName = `sum_${ key }` ) => {
     return aggr.aggregate( key, values => values.reduce( ( a, b ) => a + b, 0 ), cb, keyName );
   };
@@ -265,6 +288,7 @@ module.exports = function Aggr () {
     const clone = Aggr().groupBy( joinKey );
     filters.forEach( d => clone.filter( d ) );
     aggrs.forEach( d => clone.aggregate( d[0], d[2], d[3], d[1] ) );
+    clone.sortKeys( sortFn );
     return clone;
   };
 

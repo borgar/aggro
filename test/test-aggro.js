@@ -414,6 +414,32 @@ tape( 'token filter', t => {
   t.end();
 });
 
+tape( 'sortKeys', t => {
+  const unsorted = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 ];
+  const sorted = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ];
+
+  const r1 = aggro().groupBy( d => d.date.getUTCMonth() ).data( crimeaData );
+  t.deepEqual( r1.map( d => d.key ), unsorted, 'unsorted by default' );
+
+  // can ask for sorted keys
+  const r2 = aggro().groupBy( d => d.date.getUTCMonth() ).sortKeys().data( crimeaData );
+  t.deepEqual( r2.map( d => d.key ), sorted, 'trigger sorting by empty call' );
+
+  const a1 = aggro().groupBy( d => d.date.getUTCMonth() ).sortKeys( true );
+  const r3 = a1.data( crimeaData );
+  t.deepEqual( r3.map( d => d.key ), sorted, 'trigger sorting by TRUE' );
+
+  // can disable sorting again
+  const r4 = a1.sortKeys( false ).data( crimeaData );
+  t.deepEqual( r4.map( d => d.key ), unsorted, 'disable sorting by FALSE' );
+
+  // can pass a custom sorting function
+  const r5 = a1.sortKeys( ( a, b ) => b - a ).data( crimeaData );
+  t.deepEqual( r5.map( d => d.key ), [ 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ], 'custom key sorting function' );
+
+  t.end();
+});
+
 tape( 'cloning works', t => {
   const ag = aggro().groupBy( 'cat' ).filter( 'disease', d => d > 100 );
   const r1 = ag.data( crimeaData );
