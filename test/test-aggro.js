@@ -381,10 +381,18 @@ tape( 'filter by string range', t => {
 });
 
 tape( 'custom filter function', t => {
+  const exp1 = [ 28772, 30246, 30290, 29736, 32252, 44614, 46852, 44212, 46140 ];
   const r1 = aggro().filter( 'total', d => !( d % 2 ) ).data( crimeaData )[0].values;
-  t.deepEqual( r1.map( d => d.total ), [ 28772, 30246, 30290, 29736, 32252, 44614, 46852, 44212, 46140 ], 'even numbers' );
+  t.deepEqual( r1.map( d => d.total ), exp1, 'even numbers' );
   const r2 = aggro().filter( 'date', ( d, v ) => v.getUTCDay() === 1 ).data( crimeaData )[0].values;
   t.deepEqual( r2.map( d => d.total ), [ 23333, 32393, 46852 ], 'only mondays' );
+
+  // passing simple functions can be used too...
+  const r3 = aggro().filter( d => !( d.total % 2 ) ).data( crimeaData )[0].values;
+  t.deepEqual( r3.map( d => d.total ), exp1, 'even numbers (fn)' );
+  const r4 = aggro().filter( d => d.date.getUTCDay() === 1 ).data( crimeaData )[0].values;
+  t.deepEqual( r4.map( d => d.total ), [ 23333, 32393, 46852 ], 'only mondays (fn)' );
+
   t.end();
 });
 

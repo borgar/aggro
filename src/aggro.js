@@ -144,6 +144,13 @@ module.exports = function Aggr () {
     if ( typeof key === 'object' ) {
       filters.push( key );
     }
+    else if ( typeof key === 'function' && !test ) {
+      filters.push({
+        key: null,
+        type: 'eq',
+        test: key
+      });
+    }
     else {
       if ( typeof test !== 'function' && test !== undefined ) {
         const nTest = normalize( test );
