@@ -163,6 +163,9 @@ module.exports = function Aggr () {
           test: test
         });
       }
+      else {
+        console.warn( 'Aggro.filter was called without any filter created!' );
+      }
     }
     return aggr;
   };
