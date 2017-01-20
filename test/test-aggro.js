@@ -94,7 +94,7 @@ tape( 'join works with nested arrays', t => {
 tape( 'join by partial date', t => {
   const r1 = aggro().groupBy( d => d.date.getUTCFullYear() ).count( 'total' ).sum( 'total' ).data( crimeaData );
   t.equal( r1.length, 3, 'grouping works for dates' );
-  t.deepEqual( r1.map( d => d.key ), [ '1854', '1855', '1856' ], 'correct keys returned' );
+  t.deepEqual( r1.map( d => d.key ), [ 1854, 1855, 1856 ], 'correct keys returned' );
   t.deepEqual( r1.map( d => d.count_total ), [ 9, 12, 3 ], 'aggregate values are correct (1)' );
   t.deepEqual( r1.map( d => d.sum_total ), [ 242703, 462941, 133837 ], 'aggregate values are correct (2)' );
   t.end();

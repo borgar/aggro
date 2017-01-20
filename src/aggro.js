@@ -61,7 +61,7 @@ module.exports = function Aggr () {
       .filter( d => {
         for ( let fi = 0; fi < filters.length; fi++ ) {
           const filter = filters[fi];
-          const value = normalize( d[filter.key] );
+          const value = filter.key ? normalize( d[filter.key] ) : d;
           if ( filter.test ) {
             if ( !filter.test( value, d[filter.key] ) ) {
               return false;
@@ -108,36 +108,33 @@ module.exports = function Aggr () {
       const byKey = new Map();
       const joinFn = typeof joinKey === 'function' ? joinKey : d => d[joinKey];
       retdata.forEach( d => {
-        const key = String( joinFn( d ) );
-        const values = byKey.get( key );
-        if ( values ) {
-          values.push( d );
+        const key = joinFn( d );
+        const keyRef = joinFn( d ).valueOf();
+        const item = byKey.get( keyRef );
+        if ( item ) {
+          item.values.push( d );
         }
         else {
-          byKey.set( key, [ d ] );
+          byKey.set( keyRef, { key: key, values: [ d ] });
         }
       });
-      retdata = Array.from( byKey );
+      retdata = Array.from( byKey.values() );
     }
     else {
-      retdata = [ [ '', retdata ] ];
+      retdata = [ { key: null, values: retdata } ];
     }
 
     // convert data into join object and run aggregates
-    retdata = retdata.map( group => {
-      const val = {
-        key: group[0],
-        values: group[1]
-      };
+    retdata = retdata.map( item => {
       // expose aggregate dims
       for ( let ai = 0; ai < aggrs.length; ai++ ) {
         const [ key, id, fn, cb ] = aggrs[ai];
 
-        // TODO: work can be saved here by nesting the keys and re-using the group values
-        const n = fn( group[1].map( d => d[key] ).filter( d => d !== undefined ) );
-        val[id] = cb ? cb( n ) : n;
+        // TODO: work can be saved here by nesting the keys and re-using the item values
+        const n = fn( item.values.map( d => d[key] ).filter( d => d !== undefined ) );
+        item[id] = cb ? cb( n ) : n;
       }
-      return val;
+      return item;
     });
 
     return retdata;
