@@ -1,5 +1,6 @@
+const isProd = process.env.NODE_ENV === 'production';
 const tape = require( 'tape' );
-const aggro = require( '../' );
+const aggro = require( isProd ? '../dist/aggro' : '../' );
 
 const crimeaData = [
   { date: new Date( Date.UTC( 1854, 4 - 1, 1 ) ), total: 8571, disease: 1, wounds: 0, other: 5, cat: 'A' },

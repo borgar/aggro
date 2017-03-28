@@ -1,1 +1,1 @@
-module.exports = require( './src/aggro' );
+module.exports = require( './dist/aggro' );

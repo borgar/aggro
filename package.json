@@ -1,14 +1,19 @@
 {
   "name": "aggro",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Simple object data transformer utility",
-  "main": "index.js",
+  "main": "dist/aggro.js",
   "scripts": {
-    "test": "tape test/test-aggro.js && eslint index.js src"
+    "test": "tape test/test-aggro.js && eslint index.js src",
+    "test:build": "NODE_ENV=production tape test/test-aggro.js",
+    "build": "./node_modules/.bin/babel src/aggro.js > dist/aggro.js"
   },
   "author": "Borgar Þorsteinsson <borgar@borgar.net> (http://borgar.net/)",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "~6.24.0",
+    "babel-preset-es2015": "~6.24.0",
+    "babili": "0.0.12",
     "tape": "~4.6.2"
   }
 }
