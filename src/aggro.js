@@ -179,9 +179,6 @@
             test: test
           });
         }
-        else {
-          console.warn( 'Aggro.filter was called without any filter created!' );
-        }
       }
       return aggro;
     };
