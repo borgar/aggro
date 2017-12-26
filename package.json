@@ -7,8 +7,8 @@
     "nest",
     "data",
     "aggregate",
-    "query"
-    "transform"
+    "query",
+    "transform",
     "collection"
   ],
   "scripts": {
