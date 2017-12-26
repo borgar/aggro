@@ -57,12 +57,56 @@
     return list;
   };
 
+  const aggregations = ( group, aggrs ) => {
+    // expose aggregate dims
+    for ( let ai = 0; ai < aggrs.length; ai++ ) {
+      const [ key, id, fn, cb ] = aggrs[ai];
+      const n = fn( group.values.map( d => d[key] ).filter( d => d !== undefined ) );
+      group[id] = cb ? cb( n ) : n;
+    }
+    return group;
+  };
+
+  const splitBy = ( data, keys, aggrs ) => {
+    if ( keys.length ) {
+      const byKey = new Map();
+      const joinKey = keys[0];
+      const joinFn = typeof joinKey === 'function' ? joinKey : d => d[joinKey];
+      data.forEach( d => {
+        const key = joinFn( d );
+        const keyRef = joinFn( d ).valueOf();
+        const group = byKey.get( keyRef );
+        if ( group ) {
+          group.values.push( d );
+        }
+        else {
+          byKey.set( keyRef, { key: key, values: [ d ] });
+        }
+      });
+      data = Array.from( byKey.values() );
+    }
+    else {
+      data = [ { key: null, values: data } ];
+    }
+    // convert data into join object and run aggregates
+    const remainkeys = keys.slice( 1 );
+    data = data.map( group => {
+      aggregations( group, aggrs );
+      if ( remainkeys.length ) {
+        // recurse split the values if more keys are found
+        group.values = splitBy( group.values, remainkeys, aggrs );
+      }
+      return group;
+    });
+    return data;
+  };
+
   const collate = ( a, b ) => a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 
   function Aggro () {
     const filters = [];
     const aggrs = [];
-    let joinKey = null;
+    let joinKeys = [];
     let sortFn = null;
 
     function aggro ( data ) {
@@ -113,39 +157,8 @@
           return true;
         });
 
-      // run splits
-      if ( joinKey != null ) {
-        const byKey = new Map();
-        const joinFn = typeof joinKey === 'function' ? joinKey : d => d[joinKey];
-        retdata.forEach( d => {
-          const key = joinFn( d );
-          const keyRef = joinFn( d ).valueOf();
-          const item = byKey.get( keyRef );
-          if ( item ) {
-            item.values.push( d );
-          }
-          else {
-            byKey.set( keyRef, { key: key, values: [ d ] });
-          }
-        });
-        retdata = Array.from( byKey.values() );
-      }
-      else {
-        retdata = [ { key: null, values: retdata } ];
-      }
-
-      // convert data into join object and run aggregates
-      retdata = retdata.map( item => {
-        // expose aggregate dims
-        for ( let ai = 0; ai < aggrs.length; ai++ ) {
-          const [ key, id, fn, cb ] = aggrs[ai];
-
-          // TODO: work can be saved here by nesting the keys and re-using the item values
-          const n = fn( item.values.map( d => d[key] ).filter( d => d !== undefined ) );
-          item[id] = cb ? cb( n ) : n;
-        }
-        return item;
-      });
+      // run splits & aggregates
+      retdata = splitBy( retdata, joinKeys, aggrs );
 
       if ( sortFn ) {
         retdata.sort( ( a, b ) => {
@@ -287,12 +300,20 @@
     };
 
     aggro.groupBy = ( key ) => {
-      joinKey = key;
+      if ( key == null ) {
+        joinKeys = [];
+      }
+      else if ( Array.isArray( key ) ) {
+        joinKeys = key.filter( d => d != null );
+      }
+      else {
+        joinKeys = [ key ];
+      }
       return aggro;
     };
 
     aggro.copy = () => {
-      const clone = Aggro().groupBy( joinKey );
+      const clone = Aggro().groupBy( joinKeys );
       filters.forEach( d => clone.filter( d ) );
       aggrs.forEach( d => clone.aggregate( d[0], d[2], d[3], d[1] ) );
       clone.sortKeys( sortFn );

@@ -4,7 +4,7 @@ Aggro is a very basic utility to filter and sort a collection of items for use i
 
 It is similar to [d3.nest](https://github.com/d3/d3-collection#nests) or [Crossfilter](square.github.com/crossfilter/), but for when you just need something small and simple.
 
-It provides a few conveniences such as normalised date handling and built-in aggregations but does not have strong dimensional bindings or provide nested grouping of output.
+It provides a few conveniences such as normalised date handling and built-in aggregations but does not have strong dimensional bindings.
 
 
 # Installing
@@ -138,7 +138,7 @@ The input may be open ended: Providing `.between( "foo", [10, null] )` will remo
 
 ### Grouping data
 
-#### .groupBy( propName )
+#### .groupBy( propName | propNames )
 
 Aggro emits data as a list of groups objects. This happens even when no grouping is specified, in which case the list will only contain a single entry. Every group object will have at least two members, `key` and `values`.
 
@@ -158,7 +158,29 @@ aggro().groupBy('sex').data(population);
       { "sex": "female", ... }]}]
 ```
 
+Propname may be set to `null` to clear it. If an array is passed in, the output will be nested in as many levels as there are keys:
+
+```
+aggro().groupBy(['sex', 'eyes']).data(population);
+
+[{ "key": "male",
+   "values": [
+      { "key": "brown"
+        "values": [
+          { "sex": "male", "eyes", "brown", ... },
+          { "sex": "male", "eyes", "brown", ... }
+        ]},
+      { "key": "blue"
+        "values": [
+          { "sex": "male", "eyes", "blue", ... },
+          { "sex": "male", "eyes", "blue", ... }
+        ]}]},
+   ...
+   
+```
+
 Order of the groups will be the same as the order of which the items are found. See *Sorting data* if this is not what you want.
+
 
 
 

@@ -1,6 +1,7 @@
+/* eslint-disable indent */
 const isProd = process.env.NODE_ENV === 'production';
 const tape = require( 'tape' );
-const aggro = require( isProd ? '../dist/aggro' : '../' );
+const aggro = require( isProd ? '../dist/aggro' : '../src/aggro' );
 
 const crimeaData = [
   { date: new Date( Date.UTC( 1854, 4 - 1, 1 ) ), total: 8571, disease: 1, wounds: 0, other: 5, cat: 'A' },
@@ -39,7 +40,6 @@ const dataWithNulls = [
   { 'a': 0, 'b': false },
   { 'a': null, 'b': true }
 ];
-
 
 const underscored = d => String( d ).split( '' ).join( '_' );
 
@@ -89,6 +89,27 @@ tape( 'join works with nested arrays', t => {
   t.equal( r1.length, 3, 'grouping works for numbers' );
   t.deepEqual( r1.map( d => d.sum_1 ), [ 26, 161, 113 ], 'aggregate values are correct (1)' );
   t.deepEqual( r1.map( d => d.sum ), [ 26, 161, 113 ], 'aggregate values are correct (2)' );
+  t.end();
+});
+
+tape( 'nested grouping and aggregations', t => {
+  const r1 = aggro().groupBy( [ d => d.date.getUTCFullYear(), 'cat' ] ).sum( 'wounds' ).data( crimeaData );
+  t.equal( r1.length, 3, 'level-1 grouping by year' );
+  t.deepEqual( r1.map( d => d.sum_wounds ), [ 615, 1141, 2 ], 'summing top categories' );
+  t.deepEqual( r1.map( d => d.values.length ), [ 4, 5, 3 ], 'number of children is ok' );
+
+  const group1 = r1[0];
+  t.deepEqual( group1.values.map( d => d.sum_wounds ), [ 81, 1, 132, 401 ], 'summing subgroup1 categories' );
+  t.deepEqual( group1.values.map( d => d.values.length ), [ 2, 2, 3, 2 ], 'number of subgroup1 children is ok' );
+  t.equal( group1.key, 1854, 'subgroup1 is correctly keyed' );
+  t.equal( group1.values[0].key, 'A', 'subgroup1/subgroup1 is correctly keyed' );
+
+  const group2 = r1[1];
+  t.deepEqual( group2.values.map( d => d.sum_wounds ), [ 132, 227, 517, 101, 164 ], 'summing subgroup2 categories' );
+  t.deepEqual( group2.values.map( d => d.values.length ), [ 2, 4, 3, 2, 1 ], 'number of subgroup2 children is ok' );
+  t.equal( group2.key, 1855, 'subgroup2 is correctly keyed' );
+  t.equal( group2.values[0].key, 'B', 'subgroup2/subgroup1 is correctly keyed' );
+
   t.end();
 });
 
