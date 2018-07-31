@@ -1,1 +1,2 @@
-module.exports = require( './dist/aggro' );
+/* eslint-env es6, browser, commonjs, amd */
+module.exports = require('./dist/aggro');
